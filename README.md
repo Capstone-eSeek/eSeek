@@ -12,13 +12,29 @@
 ## 📂프로젝트 구조
 
 ```
-├── preprocessing/         # POS 데이터 전처리 및 피처 엔지니어링
-├── models/                # CatBoost 모델 학습 및 수요 예측 코드
-├── app/                   # Streamlit 기반 대시보드 UI 코드
-├── data/                  # 예시 POS 판매 데이터 (익명 처리)
-├── utils/                 # 공휴일/날씨 API 연동 및 공용 유틸 함수
-├── requirements.txt       # 필요 Python 라이브러리 목록
-├── README.md              # 프로젝트 소개 문서 (현재 파일)
+eSeek/
+├── 스타트/                     # 초기(Proof-of-Concept) 단계
+│   ├── data/                   # 원본/전처리 데이터
+│   │   └── data_pos_raw_2023_2024.csv
+│   │
+│   ├── predictions/            # 스타트 단계 예측 및 분석 결과
+│   │   ├── pred_lightgbm.csv
+│   │   ├── pred_xgboost.csv
+│   │   ├── pred_prophet.csv
+│   │   └── analysis_sku_factors.csv
+│   │
+│   └── app/                    # 대시보드(UI) 코드
+│       └── app_dashboard.py
+│
+├── 그로쓰/                     # (추후) 고도화 단계
+│   ├── data/
+│   ├── predictions/
+│   ├── models/
+│   └── app/
+│
+├── GroundRule.MD               # 협업 규칙
+├── README.md                   # 전체 프로젝트 개요
+└── requirements.txt            # (필요 시) 공통 패키지 목록
 ```
 
 ---
