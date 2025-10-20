@@ -6,13 +6,16 @@
 
 ```bash
 cd C:\Users\lalav\OneDrive\바탕 화면\DEMO
+```
 
 📦 2. requirements.txt 설치 (최초 1회만)
 
 ```bash
 pip install -r requirements.txt
+```
 
 🚀 3. Streamlit 실행
 
 ```bash
 python -m streamlit run app.py
+```
