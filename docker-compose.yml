@@ -1,0 +1,14 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  forecast_api:
+    build: .
+    ports:
+      # 외부 요청을 컨테이너 내부의 8000번 포트로 연결
+      - "8000:8000"
+    restart: always # 24시간 서비스 지속을 위해 필수
+    volumes:
+      # 로컬 data 폴더를 컨테이너 내부의 /app/data 폴더와 동기화 (데이터 파일 접근을 위해)
+      - ./data:/app/data
