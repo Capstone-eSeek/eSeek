@@ -22,4 +22,4 @@ ENV PYTHONUNBUFFERED 1
 ENV TZ Asia/Seoul
 
 # 5. Gunicorn (프로덕션 웹 서버)으로 FastAPI 앱 구동
-CMD ["gunicorn", "backend.main:app", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
+# CMD ["gunicorn", "backend.main:app", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]

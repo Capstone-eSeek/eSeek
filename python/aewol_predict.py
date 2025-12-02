@@ -10,7 +10,7 @@ from sklearn.ensemble import HistGradientBoostingRegressor
 from pandas.api.types import is_categorical_dtype
 
 # 외부 유틸리티 함수 import
-from prediction_utils import (
+from python.prediction_utils import (
     build_calendar_features,
     attach_events,
     fetch_weather_daily,
@@ -39,7 +39,7 @@ JEJU_EVENTS = [
 EVENTS_DF = expand_events(JEJU_EVENTS)
 
 
-def predict_next_week(store_name: str, base_date: date, horizon: int) -> pd.DataFrame:
+def predict_next_week(store_name: str, base_date: date, horizon: int, model: Any, transformer: Any) -> pd.DataFrame:
     """
     FastAPI /forecast 엔드포인트에서 호출되는 핵심 예측 함수.
     
@@ -146,20 +146,20 @@ def predict_next_week(store_name: str, base_date: date, horizon: int) -> pd.Data
     X_pred  = df_pred[feature_cols].copy()
 
     # 3) Column Transformer 설정 및 변환
-    ct = setup_column_transformer(X_train, feature_cols)
-    X_train_tr = ct.transform(X_train)
-    X_pred_tr  = ct.transform(X_pred)
+    # ct = setup_column_transformer(X_train, feature_cols)
+    #X_train_tr = ct.transform(X_train)
+    X_pred_tr  = transformer.transform(X_pred)
 
-    if hasattr(X_train_tr, "toarray"):
-        X_train_tr = X_train_tr.toarray()
+    if hasattr(X_pred_tr, "toarray"):
+       # X_train_tr = X_train_tr.toarray()
         X_pred_tr  = X_pred_tr.toarray()
 
     # 4) 모델 학습
-    model = HistGradientBoostingRegressor(
-        loss='poisson', learning_rate=0.05, max_depth=None, max_iter=1500,
-        l2_regularization=0.0, early_stopping=False, random_state=42
-    )
-    model.fit(X_train_tr, y_train)
+    # model = HistGradientBoostingRegressor(
+    #    loss='poisson', learning_rate=0.05, max_depth=None, max_iter=1500,
+    #    l2_regularization=0.0, early_stopping=False, random_state=42
+    # )
+    # model.fit(X_train_tr, y_train)
 
     # 5) 예측
     pred = np.maximum(model.predict(X_pred_tr), 0)

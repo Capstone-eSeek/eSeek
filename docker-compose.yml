@@ -1,14 +1,43 @@
 # docker-compose.yml
-
 version: '3.8'
 
 services:
+  # 1. 백엔드 API 서비스 (내부 통신만 사용)
   forecast_api:
-    build: .
-    ports:
-      # 외부 요청을 컨테이너 내부의 8000번 포트로 연결
-      - "8000:8000"
-    restart: always # 24시간 서비스 지속을 위해 필수
+    build: . # 기존 Dockerfile 사용
+    # 외부 포트 노출(8000:8000)을 제거했습니다. Nginx가 내부 연결을 담당합니다.
+    restart: always 
     volumes:
-      # 로컬 data 폴더를 컨테이너 내부의 /app/data 폴더와 동기화 (데이터 파일 접근을 위해)
+      - .:/app
       - ./data:/app/data
+    environment:
+      # [필수 추가] 1. Gunicorn Worker Timeout을 5분으로 늘려 SIGKILL 방지
+      GUNICORN_CMD_ARGS: "--timeout 300" 
+      # [필수 추가] 2. 모델 로드 시 메모리 부족 및 쓰레드 충돌 방지
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      NUMEXPR_NUM_THREADS: "1"
+      # [필수 추가] 3. worker_class가 uvicorn이므로 worker 수는 1~2개로 줄이는 것이 안전 (4개는 과부하 유발)
+    # [수정] 4개였던 워커 수를 2개로 줄입니다.
+    command: gunicorn backend.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+      
+
+  # 2. 프론트엔드 웹 서비스 (빌드 없이 Nginx 이미지 사용)
+  web:
+    # Docker Hub에 있는 Nginx 이미지를 사용합니다. (빌드 과정 생략)
+    image: nginx:stable-alpine
+
+    ports:
+      - "80:80"
+    restart: always
+    depends_on:
+      - forecast_api
+
+    # 로컬에서 전송한 build 폴더와 Nginx 설정을 마운트합니다.
+    volumes:
+      # Nginx 설정 파일 마운트
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      # 로컬 PC에서 전송한 frontend/build 폴더를 Nginx가 서빙할 위치로 마운트합니다.
+      # 이 경로는 로컬 PC에서 scp로 전송한 경로와 일치해야 합니다.
+      - ./frontend/build:/usr/share/nginx/html:ro

@@ -7,7 +7,7 @@ from typing import List, Dict, Any
 BACKEND_DIR = Path(__file__).parent
 PROJECT_ROOT = BACKEND_DIR.parent
 PYTHON_DIR = PROJECT_ROOT/"python"
-#sys.path.insert(0, str(PYTHON_DIR)) # 로컬에서는 이 주석 해제
+sys.path.insert(0, str(PROJECT_ROOT)) # 로컬에서는 이 주석 해제
 
 # 경로 설정
 EXPORT_DIR = PROJECT_ROOT / "data" / "results"
@@ -29,7 +29,7 @@ from apscheduler.triggers.cron import CronTrigger
 from contextlib import asynccontextmanager
 from datetime import date, timedelta
 import pytz # 시간대 처리를 위해 추가
-
+import joblib
 # 서울 시간대 설정
 SEOUL_TZ = pytz.timezone('Asia/Seoul')
 
@@ -56,33 +56,74 @@ except ImportError:
 # 스케줄러
 scheduler = AsyncIOScheduler(timezone=str(SEOUL_TZ))
 
+MODELS: Dict[str, Any] = {}
+TRANSFORMERS: Dict[str, Any] = {}
 # 지점별 설정 (필수)
 STORE_CONFIG = {
     "제주애월점": {
         "pos_file": "aewol_POS.csv",
         "pred_file": "aewol_PRED.csv",
         "model_type": "HGBR",
+        "model_file": "제주애월_model.pkl",
+        "transformer_file": "제주애월_ct.pkl",
         "predict_module": "aewol_predict"
     },
     "부산광안리점": {
         "pos_file": "gwangan_POS.csv",
         "pred_file": "gwangan_PRED.csv",
         "model_type": "CatBoost",
+        "model_file": "부산광안리_model.pkl",
+        "transformer_file": "부산광안리_ct.pkl",
         "predict_module": "gwangan_predict"
     },
     "수원타임빌라스지점": {
         "pos_file": "suwon_POS.csv",
         "pred_file": "suwon_PRED.csv",
         "model_type": "CatBoost",
+        "model_file": "수원타임빌라스지_model.pkl",
+        "transformer_file": "수원타임빌라스지_ct.pkl",
         "predict_module": "suwon_predict"
     },
     "연남점": {
         "pos_file": "yeonnam_POS.csv",
         "pred_file": "yeonnam_PRED.csv",
         "model_type": "CatBoost",
+        "model_file": "연남_model.pkl",
+        "transformer_file": "연남_ct.pkl",
         "predict_module": "yeonnam_predict"
     }
 }
+
+def load_all_models():
+    """서버 시작 시 모든 모델 파일을 메모리에 로드합니다."""
+    global MODELS, TRANSFORMERS
+    print("--- [INFO] 모든 예측 모델 로드 시작... ---")
+    
+    for store_name, config in STORE_CONFIG.items():
+        model_filename = config.get("model_file")
+        transformer_filename = config.get("transformer_file")
+        if not model_filename:
+            print(f"--- [WARNING] {store_name}: model_file 설정이 없습니다. 스킵합니다. ---")
+            continue
+        
+        # 모델 파일 경로: /app/python 폴더 안에 있다고 가정
+        model_path = PYTHON_DIR / model_filename 
+        transformer_path = PYTHON_DIR / transformer_filename 
+
+        if not model_path.exists() or not transformer_path.exists():
+            print(f"--- [ERROR] 모델 또는 Transformer 파일 없음: {store_name} ---")
+            continue
+
+        try:
+            model = joblib.load(model_path)
+            ct = joblib.load(transformer_path)
+            MODELS[store_name] = model
+            TRANSFORMERS[store_name] = ct 
+            print(f"✅ {store_name} 모델 ({model_filename}) 로드 완료.")
+        except Exception as e:
+            print(f"❌ {store_name} 모델 로드 실패: {type(e).__name__} - {e}")
+            
+    print(f"--- [INFO] 총 {len(MODELS)}개 모델 메모리 로드 완료. ---")
 
 def get_product_list_from_pos(store_name: str) -> List[str]:
     """지점 이름으로 POS 파일을 찾아 상품명 리스트를 반환합니다."""
@@ -127,7 +168,8 @@ async def lifespan(app: FastAPI):
     """
     FastAPI 애플리케이션의 시작(startup) 및 종료(shutdown) 이벤트를 처리합니다.
     """
-    
+    load_all_models() 
+
     # 1. Startup 로직: 스케줄러 등록 및 시작
     scheduler.add_job(
         scheduled_forecast_job, 
@@ -234,10 +276,17 @@ async def generate_forecast(request: ForecastRequest):
         config = STORE_CONFIG[request.store_name]
         module_name = config["predict_module"] 
         
-        # 2. 지점별 예측 모듈 동적 로드 및 함수 참조
+        # 2. 모델 캐싱 사용 
+        model = MODELS.get(request.store_name)
+        transformer = TRANSFORMERS.get(request.store_name) # <--- Transformer 가져오기
+        
+        if model is None or transformer is None: # <--- Transformer None 체크 추가
+             raise HTTPException(status_code=500, detail="예측 모델이 메모리에 로드되지 않았습니다. 서버 로그를 확인하세요.")
         try:
             # importlib을 사용하여 python/aewol_predict.py 모듈을 로드
-            predict_module = importlib.import_module(module_name)
+            full_module_name = "python." + module_name # <--- 이 줄을 추가합니다.
+            predict_module = importlib.import_module(full_module_name) # <--- module_name 대신 full_module_name을 사용합니다.
+    
             predict_func = getattr(predict_module, "predict_next_week")
         except ImportError:
             raise HTTPException(status_code=501, detail=f"예측 모듈 '{module_name}.py'를 찾을 수 없습니다. python 폴더에 파일이 있는지 확인하세요.")
@@ -249,14 +298,16 @@ async def generate_forecast(request: ForecastRequest):
         predictions_df = predict_func(
             store_name=request.store_name,
             base_date=request.base_date,
-            horizon=request.horizon
+            horizon=request.horizon,
+            model=model,
+            transformer=transformer
         )
         
         # 4. CSV 저장
         base_date_str = request.base_date.strftime('%Y%m%d')
         filename = f"{request.store_name}_forecast_{base_date_str}.csv"
         csv_path = EXPORT_DIR / filename
-        
+        csv_path.parent.mkdir(parents=True, exist_ok=True)
         predictions_df.to_csv(csv_path, index=False, encoding="utf-8-sig")
         
         print(f"--- [INFO] 예측 CSV 저장 완료: {csv_path} ---")

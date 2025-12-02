@@ -8,14 +8,14 @@ from sklearn.metrics import r2_score
 
 # models.py에서 필요한 모델들을 import 해야 함
 # 이미 backend/main.py에서 api 엔드포인트 상단에서 경로에 추가했기 때문에 바로 from models해도 됨
-from models import (
+from backend.models import (
     ValidationQueryRequest,
     ValidationResponse,
     MetricsData,
     DailyAggregate,
     QueryPeriod
-)
-
+) # [DEBUG] 2. backend.models 임포트 성공 확인
+print("--- [VALIDATE DEBUG] 2. backend.models 임포트 성공. ---")
 # 경로 설정(데이터 파일)
 PROJECT_ROOT = Path(__file__).parent.parent
 DATA_DIR = PROJECT_ROOT / "data" / "processed"

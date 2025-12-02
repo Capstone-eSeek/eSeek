@@ -10,7 +10,7 @@ from catboost import CatBoostRegressor, Pool
 from pandas.api.types import is_categorical_dtype
 
 # ⭐️ 외부 유틸리티 함수 import ⭐️
-from prediction_utils import (
+from python.prediction_utils import (
     build_calendar_features,
     attach_events,
     fetch_weather_daily,
@@ -135,7 +135,7 @@ def make_features(df_in: pd.DataFrame, start_date: str, end_date: str, mode="tra
 # ----------------------------------------------------
 # predict_next_week: API 호출용 메인 예측 함수 
 # ----------------------------------------------------
-def predict_next_week(store_name: str, base_date: date, horizon: int) -> pd.DataFrame:
+def predict_next_week(store_name: str, base_date: date, horizon: int, model: Any, transformer: Any ) -> pd.DataFrame:
     """
     CatBoost 모델을 사용하여 수원점의 다음 주 수요를 예측합니다.
     (수원점 모델은 CatBoost 일반(log1p 없음)으로 가정하고 구현)
@@ -205,8 +205,8 @@ def predict_next_week(store_name: str, base_date: date, horizon: int) -> pd.Data
     # 2) 데이터 준비 (로그 변환 없음)
     TARGET = '수량'
     
-    X_train = df_train[feature_cols].copy()
-    y_train = df_train[TARGET].astype(float).clip(lower=0) # ⭐️ 로그 변환 없음 ⭐️
+    # X_train = df_train[feature_cols].copy()
+    # y_train = df_train[TARGET].astype(float).clip(lower=0) # ⭐️ 로그 변환 없음 ⭐️
 
     X_pred  = df_pred[feature_cols].copy()
 
@@ -215,15 +215,15 @@ def predict_next_week(store_name: str, base_date: date, horizon: int) -> pd.Data
     cat_idx = [feature_cols.index(c) for c in cat_cols]
     
     # 4) Pool 구성
-    train_pool = Pool(X_train, y_train, cat_features=cat_idx)
+    # train_pool = Pool(X_train, y_train, cat_features=cat_idx)
     pred_pool  = Pool(X_pred,           cat_features=cat_idx)
     
     # 5) 모델 정의/학습 
-    model = CatBoostRegressor(
-        loss_function='RMSE', eval_metric='R2', depth=8, learning_rate=0.05,
-        iterations=5000, l2_leaf_reg=3.0, random_seed=42, verbose=0
-    )
-    model.fit(train_pool)
+    # model = CatBoostRegressor(
+    #     loss_function='RMSE', eval_metric='R2', depth=8, learning_rate=0.05,
+    #     iterations=5000, l2_leaf_reg=3.0, random_seed=42, verbose=0
+    # )
+    # model.fit(train_pool)
     
     # 6) 예측 (역변환 없음 + 음수 방지)
     pred = model.predict(pred_pool)
