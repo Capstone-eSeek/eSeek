@@ -13,6 +13,27 @@
 
 ```
 eSeek/
+├── backend/
+│   ├── main.py     # FastAPI 앱 및 Lifespan(모델 로드) 정의
+│   └── models.py   # Pydantic 데이터 모델 
+├── data/
+│   ├── auto_forecast_results/  # 스케줄러에 의해 주 단위 예측된 지점별 결과 자동 저장 
+│   ├── processed/              # 전처리된 POS 데이터, 예측 결과 데이터 통합본 저장 
+│   └── results/                # 사용자가 예측 실행 시 결과 저장 
+├── frontend/
+│   └── src/App.js              # 웹 대시보드 구조 및 API 호출 로직 
+├── python/
+│   ├── *_predict.py             # 각 지점별 예측 로직 
+│   ├── prediction_utils.py      # 공통 피처링 유틸리티 
+│   ├── *_model.pkl              # 학습된 모델 객체 (4개 지점)
+│   ├── *_ct.pkl                 # 학습된 transformer 객체 (4개 지점)
+│   └── validate.py              # 검증(validation) 로직 
+├── nginx/
+├── Dockerfile                   # [배포] 백엔드 엔진 및 Docker 이미지 빌드 
+├── Dockerfile.web               # [배포] 프론트엔드/Nginx 이미지 빌드 
+├── docker-compose.yml           # [배포] 서비스 통합 및 관리 정의(Nginx/FastAPI) 
+├── requirements.txt            # python 가상환경 패키지 목록 
+│
 ├── 스타트/                     # 초기(Proof-of-Concept) 단계
 │   ├── data/                   # 원본/전처리 데이터
 │   │   └── data_pos_raw_2023_2024.csv
@@ -26,15 +47,14 @@ eSeek/
 │   └── app/                    # 대시보드(UI) 코드
 │       └── app_dashboard.py
 │
-├── 그로쓰/                     # (추후) 고도화 단계
-│   ├── data/
-│   ├── predictions/
-│   ├── models/
-│   └── app/
+├── 그로쓰/                     
+│   ├── DEMO/
+│   ├── 포스터.pdf
+│   ├── 1차보고서
+│   └── 2차보고서
 │
 ├── GroundRule.MD               # 협업 규칙
-├── README.md                   # 전체 프로젝트 개요
-└── requirements.txt            # (필요 시) 공통 패키지 목록
+└── README.md                   # 전체 프로젝트 개요
 ```
 
 ---
@@ -48,6 +68,12 @@ eSeek/
 ---
 
 ## 🚀실행 방법
+
+웹 (맨 위로 내용 뺴기?) 
+
+http://51.20.142.60/
+
+streamlit 
 
 1. Python 3.10 이상 환경에서 필요한 패키지 설치:
 
