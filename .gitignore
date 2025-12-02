@@ -1,0 +1,20 @@
+# macOS 생성 파일
+.DS_Store
+
+# Python 환경 및 종속성
+venv/
+__pycache__/
+*.pyc
+
+# Git에 올리지 않을 데이터 및 결과 파일 (용량 절감)
+# 실제 데이터는 서버에 별도로 올려야 합니다.
+data/results/
+data/auto_forecast_results/
+data/processed/*.csv 
+
+# 모델 파일 (보통 용량이 커서 제외)
+python/*.pkl
+python/*.model
+
+# Uvicorn/FastAPI 로그
+*.log
