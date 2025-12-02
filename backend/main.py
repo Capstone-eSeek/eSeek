@@ -7,7 +7,7 @@ from typing import List, Dict, Any
 BACKEND_DIR = Path(__file__).parent
 PROJECT_ROOT = BACKEND_DIR.parent
 PYTHON_DIR = PROJECT_ROOT/"python"
-sys.path.insert(0, str(PYTHON_DIR))
+#sys.path.insert(0, str(PYTHON_DIR)) # 로컬에서는 이 주석 해제
 
 # 경로 설정
 EXPORT_DIR = PROJECT_ROOT / "data" / "results"
@@ -34,7 +34,8 @@ import pytz # 시간대 처리를 위해 추가
 SEOUL_TZ = pytz.timezone('Asia/Seoul')
 
 # Pydantic 모델 import
-from models import (
+# 로컬에서는 .models -> models로 수정 
+from .models import (
     ValidationQueryRequest,
     ValidationResponse,
     StoreListResponse,
@@ -44,8 +45,9 @@ from models import (
 )
 
 # 외부 모듈: python/validate.py 에서 run_validation 함수 import
+# 로컬에서는 python.validate -> validate로 수정 
 try:
-    from validate import run_validation
+    from python.validate import run_validation
 except ImportError:
     # validate.py 파일이 없거나 함수가 정의되지 않은 경우를 대비한 임시 예외 처리
     def run_validation(query: ValidationQueryRequest, store_config: Dict[str, Any]):
