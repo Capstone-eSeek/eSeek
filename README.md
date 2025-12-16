@@ -145,7 +145,9 @@ streamlit run app/main.py
 docker-compose build
 docker-compose up -d
 ```
---
+- 웹 서비스 접속: 사용자가 직접 이용하는 React 기반 웹 화면
+- 백엔드 API: 예측 모델이 동작하는 FastAPI 서버 (프론트엔드에서 호출)
+---
 
 ## 👥 팀 정보
 
