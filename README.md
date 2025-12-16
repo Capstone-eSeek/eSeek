@@ -102,8 +102,7 @@ eSeek/
     - 날씨 (기온, 강수량)
     - 요일 / 주말 여부
     - 공휴일 여부
-    - 이벤트 정보
- 
+    - 이벤트 정보 
 ※ 실제 협업 데이터는 비공개이며, README에는 비식별화된 구조 설명만 포함합니다.
 ---
 ## 🗄 Database / Data Used
@@ -119,10 +118,10 @@ eSeek/
 - Docker: 배포 환경
 - Nginx: Reverse Proxy
 ---
-## 🚀실행 방법
+## 🚀 DEMO 
+### 1️⃣ 중간 단계: Streamlit 기반 모델 검증
 
-
-streamlit 
+본 Streamlit 앱은  최종 서비스 개발 이전 단계에서 **모델 성능 검증 및 데이터 흐름 확인을 위한 프로토타입**입니다.
 
 1. Python 3.10 이상 환경에서 필요한 패키지 설치:
 
@@ -136,16 +135,28 @@ pip install -r requirements.txt
 streamlit run app/main.py
 ```
 
----
+### 2️⃣ 최종 단계: React + FastAPI 웹 서비스
 
-## 👥팀 정보
+본 단계는 **실제 점포 운영 환경에서 사용 가능한 형태의 웹 서비스**로, 모델 예측 결과를 **사용자 친화적인 UI를 통해 제공**하는 것을 목표로 합니다.
+- Frontend: React 기반 대시보드
+- Backend: FastAPI 기반 예측 API 서버
+- 배포 환경: Docker + Nginx
+
+실행방법 (Docker 권장)
+```bash
+docker-compose build
+docker-compose up -d
+```
+--
+
+## 👥 팀 정보
 
 - 프로젝트명: 머신러닝 기반 베이커리 수요예측 시스템 : Randy's Donuts과의 공동 프로젝트
-- 팀번호/팀명: 13팀/e시크 (이화여자대학교 컴퓨터공학과 캡스톤디자인)
+- 팀번호/팀명: 13팀/e시크 (이화여자대학교 컴퓨터공학과 2025 캡스톤디자인과 창업프로젝트)
 
 ---
 
-## 💌문의
+## 💌 문의
 
 프로젝트와 관련된 문의는 아래 이메일로 부탁드립니다.
 
