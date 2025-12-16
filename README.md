@@ -71,7 +71,7 @@ eSeek/
     - 날씨·요일·휴일·시간대·과거 판매량 등 다차원 Feature Engineering
 - Frontend (Web Dashboard)
     - React 기반 단일 페이지 대시보드
-    - 날짜/점포/상품 선액 후 예측 결과 시각화
+    - 날짜·점포·상품 선액 후 예측 결과 시각화
     - CSV 다운로드 기능 제공공
 ---
 
@@ -83,7 +83,42 @@ eSeek/
 - 웹 대시보드 : React 기반 대시보드를 통해 예측정확도 검증 결과, 수요예측 결과를 협업사에 제공
 
 ---
+## 🛠 How to Build
 
+---
+## 📦 How to Install
+
+---
+## 🧪 How to Test
+
+---
+## 📊 Description of Sample Data
+- POS 데이터
+    - 날짜
+    - 상품명
+    - 판매 수량
+    - 점포 ID
+- 외부 변수
+    - 날씨 (기온, 강수량)
+    - 요일 / 주말 여부
+    - 공휴일 여부
+    - 이벤트 정보
+ 
+※ 실제 협업 데이터는 비공개이며, README에는 비식별화된 구조 설명만 포함합니다.
+---
+## 🗄 Database / Data Used
+- CSV 기반 데이터 저장 구조
+- 예측 결과는 서버 로컬 디렉토리에 자동 저장
+---
+## 🔓 Used Open Source
+- FastAPI: Backend API
+- CatBoost: 수요예측 모델
+- scikit-learn: 전처리 및 평가
+- pandas / numpy: 데이터 처리
+- React: Frontend
+- Docker: 배포 환경
+- Nginx: Reverse Proxy
+---
 ## 🚀실행 방법
 
 
